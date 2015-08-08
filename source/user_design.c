@@ -41,38 +41,32 @@ void user_design()
 	unsigned i, index;
 	unsigned data[1460];
 	unsigned word;
-	unsigned switches = 0;
-	unsigned buttons = 0;
+	unsigned speed = 0;
 	unsigned leds = 0;
 	unsigned start, end;
 
 	unsigned page[] = 
 "<html>\
 <head>\
-<title>Chips-2.0 ATLYS Demo</title>\
+<title>Chips-2.0 GigaBee Demo</title>\
 </head>\
 <body>\
-<h1>Chips-2.0 ATLYS Demo</h1>\
-<p>Welcome to the Chips-2.0 ATLYS Demo!</p>\
-<p>Switch Status: 00000000</p>\
-<p>Button Status: 0000</p>\
+<h1>Chips-2.0 GigaBee Demo</h1>\
+<p>Welcome to the Chips-2.0 GigaBee Demo!</p>\
+<p>Link speed: 1000 Mb/s</p>\
 <form>\
 	<input type=\"checkbox\" name=\"led1\" value=\"A\">led 0</input>\
 	<input type=\"checkbox\" name=\"led2\" value=\"B\">led 1</input>\
 	<input type=\"checkbox\" name=\"led3\" value=\"C\">led 2</input>\
 	<input type=\"checkbox\" name=\"led4\" value=\"D\">led 3</input>\
-	<input type=\"checkbox\" name=\"led4\" value=\"E\">led 4</input>\
-	<input type=\"checkbox\" name=\"led4\" value=\"F\">led 5</input>\
-	<input type=\"checkbox\" name=\"led4\" value=\"G\">led 6</input>\
-	<input type=\"checkbox\" name=\"led4\" value=\"H\">led 7</input>\
-	<button type=\"sumbit\" value=\"Submit\">Update LEDs</button>\
+	<button type=\"submit\" value=\"Submit\">Update LEDs</button>\
 </form>\
 <p>This <a href=\"https://github.com/dawsonjon/Chips-Demo\">project</a>\
  is powered by <a href=\"http://pyandchips.org\">Chips-2.0</a>.</p>\
 </body>\
 </html>";
 
-	print_string("Welcome to the Atlys Chips-2.0 demo!\n");
+	print_string("Welcome to the GigaBee Chips-2.0 demo!\n");
 	print_string("Connect your web browser to 192.168.1.1\n");
 	while(1){
 
@@ -102,61 +96,25 @@ void user_design()
 			if(find(data, 'B', start, end) != -1) leds |= 2;
 			if(find(data, 'C', start, end) != -1) leds |= 4;
 			if(find(data, 'D', start, end) != -1) leds |= 8;
-			if(find(data, 'E', start, end) != -1) leds |= 16;
-			if(find(data, 'F', start, end) != -1) leds |= 32;
-			if(find(data, 'G', start, end) != -1) leds |= 64;
-			if(find(data, 'H', start, end) != -1) leds |= 128;
 			output_leds(leds);
-
-			//read switch values
-			//==================
-			switches = ~input_switches();
+			
+			speed = input_speed();
 			//find first ':'
 			index = find(page, ':', 0, 1460);
-			index+=2;
-			//insert switch values
-			if(switches & 128) page[index] = '0';
-			else page[index] = '1';
-			index ++;
-			if(switches & 64) page[index] = '0';
-			else page[index] = '1';
-			index ++;
-			if(switches & 32) page[index] = '0';
-			else page[index] = '1';
-			index ++;
-			if(switches & 16) page[index] = '0';
-			else page[index] = '1';
-			index ++;
-			if(switches & 8) page[index] = '0';
-			else page[index] = '1';
-			index ++;
-			if(switches & 4) page[index] = '0';
-			else page[index] = '1';
-			index ++;
-			if(switches & 2) page[index] = '0';
-			else page[index] = '1';
-			index ++;
-			if(switches & 1) page[index] = '0';
-			else page[index] = '1';
-
-			//read button values
-			//==================
-			buttons = ~input_buttons();
-			//find next ':'
-			index = find(page, ':', index+1, 1460);
-			index+=2;
-			//insert button values
-			if(buttons & 1) page[index] = '0';
-			else page[index] = '1';
-			index ++;
-			if(buttons & 2) page[index] = '0';
-			else page[index] = '1';
-			index ++;
-			if(buttons & 4) page[index] = '0';
-			else page[index] = '1';
-			index ++;
-			if(buttons & 8) page[index] = '0';
-			else page[index] = '1';
+			index+=4;
+			//insert speed
+			if(speed == 0) {
+				// 10 Mb/s: delete two zeroes
+				page[index] = ' ';
+				index++;
+				page[index] = ' ';
+			}
+			if(speed == 1) {
+				// 100 Mb/s: delete one zero
+				index++;
+				page[index] = ' ';
+			}
+			// 1000 Mb/s: do nothing
 
 			HTTP_OK(page);
 		} else {
