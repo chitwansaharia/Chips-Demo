@@ -1,31 +1,26 @@
-Chips-2.0 Demo for ATLYS Development Card
-=========================================
+ethernet_mac Demo with Chips-2.0 HTTP server on GigaBee
+=======================================================
 
-:Author: Jonathan P Dawson
-:Date: 2013-10-15
-:email: chips@jondawson.org.uk
-
-
-This project is intended to demonstrate the capabilities of the `Chips-2.0 <http:pyandchips.org>`_  development environment. The project is targets the Xilinx Spartan 6 device, and more specifically, the Digilent ATLYS development platform. The demo implements a TCP/IP socket interface, and a simple web application. So far the demonstration has been tested on a Ubuntu Linux only. Some users have reported success using windows.
+This project is intended to demonstrate the capabilities of the `ethernet_mac` tri-mode full-duplex Ethernet MAC. It is based on a demo for the `Chips-2.0 <http:pyandchips.org>`_  development environment by Jonathan P Dawson. The project targets the Xilinx Spartan 6 device, and more specifically, the Trenz Electronic GigaBee platform. The demo implements a TCP/IP socket interface, and a simple web application.
 
 Dependencies
 ============
 
 You will need:
 
-+ Xilinx ISE 12.0 or later (webpack edition is free)
++ Xilinx ISE 14.7 (webpack edition is free)
 + Python 2.7 or later (but not Python 3)
-+ Chips-2.0 (Included)
-+ Digilent `ATLYS <http://www.digilentinc.com/Products/Detail.cfm?NavPath=2,400,836&Prod=ATLYS&CFID=3188339&CFTOKEN=15014968>`_  Spartan 6 Development Kit.
-+ Digilent ADEPT2 `utility <http://www.digilentinc.com/Products/Detail.cfm?NavPath=2,66,828&Prod=ADEPT2>`_ 
++ Chips-2.0 (optional, included)
++ ethernet_mac (included)
++ A Trenz Electronic GigaBee FPGA module (TE0600) and baseboard (TE0603)
 + git
 
 Install
 =======
 
-Clone the git the repository with git::
+Clone the git repository with git::
 
-    $ git clone https://github.com/dawsonjon/Chips-Demo.git
+    $ git clone https://github.com/pkerling/Chips-Demo.git
     $ cd Chips-Demo
     $ git submodule init
     $ git submodule update
@@ -33,27 +28,22 @@ Clone the git the repository with git::
 Chips Compile
 =============
 
-To compile the c code in chips, issue the following command in the project folder::
+To compile the C code in chips, issue the following command in the project folder::
 
-    $ ./atlys.py compile
+    $ make
+    
+Alternatively, you can copy the contents of the `precompiled` folder into the `source` folder.
 
 Build in ISE 
 ============
 
-Edit the Xilinx variable in the scripts/user_settings to point to the Xilinx ISE install directory. Then build the design using the following command::
+Open the project file Chips-Demo.xise in the ISE project navigator.
+Select the root node "xc6slx45-2fgg484" in the hierarchy view. Run the "Regenerate All Cores"
+process under "Design Utilities". Then, you can implement the top module "GigaBee" as usual.
+Download the .bit-file to the device using iMPACT.
 
-    $ ./atlys.py build
-
-Download to ATLYS 
-=================
-
-Power up the ATLYS, and connect the JTAG USB cable to your PC. Run the download command::
-
-    $ ./atlys.py download
-
-You can complete all three steps in one go using the *all* option::
-
-    $ ./atlys.py all
+The default project settings are for an Spartan-6 XC6SLX45-2 FPGA. You need to modify
+them if you have a different device.
 
 Setup and Test
 ==============
@@ -61,10 +51,10 @@ Setup and Test
 ::
         
         +----------------+                 +----------------+
-        | PC             |                 | Digilent ATLYS |
+        | PC             |                 | TE0603         |
         |                |   POWER =======>o                |
         |                |                 |                |
-        |          USB   o<===============>o JTAG USB       |
+        |          JTAG  o<===============>o JTAG           |
         |                |                 |                |
         |          ETH0  o<===============>o ETHERNET       |
         |                |                 |                |
@@ -73,7 +63,7 @@ Setup and Test
 
 ..
 
-Connect the Ethernet port to ATLYS, using a crossed over Ethernet cable.
+Connect the Ethernet port to the GigaBee baseboard.
 
 Using the script, configure Ethernet port with IP address 192.168.1.0 and subnet mask 255.255.255.0. Turn off TCP Window Scaling and TCP time stamps::
 
@@ -94,5 +84,5 @@ Verify connection using ping command::
 
 Connect to 192.168.1.1 using your favourite browser.
 
-.. image:: https://raw.github.com/dawsonjon/Chips-Demo/master/images/screenshot.png
+.. image:: https://raw.github.com/pkerling/Chips-Demo/master/images/screenshot.png
         :width: 75%
