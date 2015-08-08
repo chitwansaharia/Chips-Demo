@@ -177,17 +177,14 @@ architecture RTL of GigaBee is
     );
   end component;
 
-  --chips signals
-  signal CLK : std_logic;
-
   --clock tree signals
   signal clkin1            : std_logic;
   -- Output clock buffering
   signal clkfb             : std_logic;
   signal clk0              : std_logic;
   signal clkfx             : std_logic;
-  signal CLK_OUT1          : std_logic;
-  signal CLK_OUT3          : std_logic;
+  signal CLK_50          : std_logic;
+  signal CLK_125          : std_logic;
   signal INTERNAL_RST      : std_logic;
   signal LOCKED         : std_logic;
   
@@ -241,7 +238,7 @@ architecture RTL of GigaBee is
   signal TX_DATA : t_ethernet_data;
   signal TX_WR_EN : std_ulogic;
   signal TX_FULL : std_ulogic;
-
+  
 begin
 	
 	TXD <= std_logic_vector(TXD_INTERNAL);
@@ -253,7 +250,7 @@ begin
 			MIIM_RESET_WAIT_TICKS => 1250000 -- 10 ms at 125 MHz clock, minimum: 5 ms
 		)
 		port map(
-			clock_125_i      => clkin1,
+			clock_125_i      => clk0,
 			reset_i          => INTERNAL_RST,
 			mii_tx_clk_i     => TXCLK,
 			mii_tx_er_o      => TXER,
@@ -265,26 +262,32 @@ begin
 			mii_rxd_i        => std_ulogic_vector(RXD),
 			gmii_gtx_clk_o   => GTXCLK,
 			rgmii_rx_ctl_i   => '0',
-			miim_clock_i     => CLK_OUT3,
+			miim_clock_i     => CLK_125,
 			mdc_o            => MDC,
 			mdio_io          => MDIO,
 			link_up_o        => LINK_UP,
 			speed_o          => SPEED,
-			rx_clock_i       => CLK_OUT3,
-			rx_reset_o       => RX_RESET,
-			rx_empty_o       => RX_EMPTY,
-			rx_rd_en_i       => RX_RD_EN,
-			rx_data_o        => RX_DATA,
-			tx_clock_i       => CLK_OUT3,
+			tx_clock_i       => CLK_50,
 			tx_reset_o       => TX_RESET,
 			tx_data_i        => TX_DATA,
 			tx_wr_en_i       => TX_WR_EN,
-			tx_full_o        => TX_FULL
+			tx_full_o        => TX_FULL,
+			rx_clock_i       => CLK_50,
+			rx_reset_o       => RX_RESET,
+			rx_empty_o       => RX_EMPTY,
+			rx_rd_en_i       => RX_RD_EN,
+			rx_data_o        => RX_DATA
+			
+			-- Force 1000 Mbps/GMII in simulation only
+			-- pragma translate_off
+			, speed_override_i => SPEED_1000MBPS
+			-- pragma translate_on
+			
 		);
 
   SERVER_INST_1 : SERVER port map(
-      CLK => CLK,
-      RST => INTERNAL_RST,
+      CLK => CLK_50,
+      RST => TX_RESET,
     
       --ETH RX STREAM
       INPUT_ETH_RX => ETH_RX,
@@ -309,8 +312,8 @@ begin
     );
 
   USER_DESIGN_INST_1 : USER_DESIGN port map(
-      CLK => CLK,
-      RST => INTERNAL_RST,
+      CLK => CLK_50,
+      RST => TX_RESET,
     
       OUTPUT_LEDS => OUTPUT_LEDS,
       OUTPUT_LEDS_STB => OUTPUT_LEDS_STB,
@@ -341,12 +344,30 @@ begin
       OUTPUT_SOCKET_ACK => INPUT_SOCKET_ACK
 
   );
+  
+  mac_adaptor_inst : entity work.chips_mac_adaptor
+  	port map(
+  		clock_i        => CLK_50,
+  		reset_i        => TX_RESET,
+  		tx_data_o      => tx_data,
+  		tx_wr_en_o     => tx_wr_en,
+  		tx_full_i      => tx_full,
+  		rx_empty_i     => rx_empty,
+  		rx_rd_en_o     => rx_rd_en,
+  		rx_data_i      => rx_data,
+  		chips_tx_i     => ETH_TX,
+  		chips_tx_stb_i => ETH_TX_STB,
+  		chips_tx_ack_o => ETH_TX_ACK,
+  		chips_rx_o     => ETH_RX,
+  		chips_rx_stb_o => ETH_RX_STB,
+  		chips_rx_ack_i => ETH_RX_ACK
+  	);
 
   SERIAL_OUTPUT_INST_1 : entity work.serial_output generic map(
       CLOCK_FREQUENCY => 50000000,
       BAUD_RATE       => 115200
   )port map(
-      CLK     => CLK,
+      CLK     => CLK_50,
       RST     => INTERNAL_RST,
       TX      => RS232_TX,
      
@@ -359,7 +380,7 @@ begin
       CLOCK_FREQUENCY => 50000000,
       BAUD_RATE       => 115200
   ) port map (
-      CLK      => CLK,
+      CLK      => CLK_50,
       RST      => INTERNAL_RST,
       RX       => RS232_RX,
      
@@ -372,22 +393,28 @@ begin
 
   process
   begin
-    wait until rising_edge(CLK);
+    wait until rising_edge(CLK_50);
    
     if OUTPUT_LEDS_STB = '1' then
-       GPIO_LEDS <= OUTPUT_LEDS(3 downto 0);
+       GPIO_LEDS <= not OUTPUT_LEDS(3 downto 0);
     end if;
     OUTPUT_LEDS_ACK <= '1';
     
 	INPUT_SPEED_STB <= '1';
 	INPUT_SPEED(15 downto 2) <= (others => '0');
-	-- TODO set speed
+	INPUT_SPEED(1 downto 0) <= std_logic_vector(SPEED);
 
 end process;
+--GPIO_LEDS <= (not link_up) & (not std_logic_vector(speed)) & (not RX_RESET);
 
 reset_generator_inst : entity work.reset_generator
+	-- pragma translate_off
+	generic map(
+			RESET_DELAY => 10
+		)
+	-- pragma translate_on
 	port map(
-		clock_i  => CLK_OUT3,
+		clock_i  => CLK_125,
 		locked_i => LOCKED,
 		reset_o  => INTERNAL_RST
 	);
@@ -461,22 +488,16 @@ reset_generator_inst : entity work.reset_generator
 
   -- Output buffering
   -------------------------------------
-  clkfb <= CLK_OUT3;
+  clkfb <= CLK_125;
 
   BUFG_INST2 : BUFG
   port map
-   (O   => CLK_OUT3,
+   (O   => CLK_125,
     I   => clk0);
 
   BUFG_INST3 : BUFG
   port map
-   (O   => CLK_OUT1,
+   (O   => CLK_50,
     I   => clkfx);
-
-  -- Chips CLK frequency selection
-  -------------------------------------
-
-  CLK <= CLK_OUT1; --50 MHz
-  --CLK <= CLK_OUT3; --125 MHz
 
 end architecture RTL;

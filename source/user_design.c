@@ -61,8 +61,9 @@ void user_design()
 	<input type=\"checkbox\" name=\"led4\" value=\"D\">led 3</input>\
 	<button type=\"submit\" value=\"Submit\">Update LEDs</button>\
 </form>\
-<p>This <a href=\"https://github.com/dawsonjon/Chips-Demo\">project</a>\
- is powered by <a href=\"http://pyandchips.org\">Chips-2.0</a>.</p>\
+<p>This <a href=\"https://github.com/pkerling/Chips-Demo\">project</a>\
+ is powered by <a href=\"http://pyandchips.org\">Chips-2.0</a> and\
+ <a href=\"https://github.com/pkerling/ethernet_mac\">ethernet_mac</a>.</p>\
 </body>\
 </html>";
 
@@ -111,10 +112,16 @@ void user_design()
 			}
 			if(speed == 1) {
 				// 100 Mb/s: delete one zero
+				page[index] = '0';
 				index++;
 				page[index] = ' ';
 			}
-			// 1000 Mb/s: do nothing
+			if(speed == 2) {
+				// 1000 Mb/s: two zeroes
+				page[index] = '0';
+				index++;
+				page[index] = '0';
+			}
 
 			HTTP_OK(page);
 		} else {

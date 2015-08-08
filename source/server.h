@@ -498,6 +498,13 @@ unsigned application_get_data(unsigned packet[], unsigned start){
 	return length;
 }
 
+void init_tx(){
+	unsigned i;
+	for(i=0; i<512; i++) {
+		tx_packet[i] = 0;
+	}
+}
+
 void server()
 {
 	unsigned rx_packet[1024];
@@ -522,6 +529,8 @@ void server()
 
 	tx_seq[0] = 0;
 	tx_seq[1] = 0;
+	
+	init_tx();
 
 	while(1){
 
@@ -595,7 +604,13 @@ void server()
 					if(rx_syn_flag) state = open;
 					else{
 						tx_rst_flag = 1;
+						// set remote ip/port
+						remote_ip_hi = rx_packet[13];
+						remote_ip_lo = rx_packet[14];
+						tx_dest = rx_source;
+						tx_source = local_port;
 						put_tcp_packet(tx_packet, 0);//send reset packet
+						tx_rst_flag = 0;
 					}
 					break;
 
