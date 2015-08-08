@@ -1,7 +1,7 @@
 ethernet_mac Demo with Chips-2.0 HTTP server on GigaBee
 =======================================================
 
-This project is intended to demonstrate the capabilities of the ethernet_mac tri-mode full-duplex Ethernet MAC. It is based on a demo for the `Chips-2.0 <http://pyandchips.org>`_  development environment by Jonathan P Dawson. The project targets the Xilinx Spartan 6 device, and more specifically, the `Trenz Electronic GigaBee platform <http://www.trenz-electronic.de/products/fpga-boards/trenz-electronic/te0600.html>`. The demo implements a TCP/IP socket interface, and a simple web application.
+This project is intended to demonstrate the capabilities of the ethernet_mac tri-mode full-duplex Ethernet MAC. It is based on a demo for the `Chips-2.0 <http://pyandchips.org>`_  development environment by Jonathan P Dawson. The project targets the Xilinx Spartan 6 device, and more specifically, the `Trenz Electronic GigaBee platform <http://www.trenz-electronic.de/products/fpga-boards/trenz-electronic/te0600.html>`_. The demo implements a TCP/IP socket interface, and a simple web application.
 
 Dependencies
 ============
