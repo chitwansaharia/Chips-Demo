@@ -17,9 +17,6 @@ architecture behavioral of gigabee_tb is
 	signal RXCLK            : std_logic                    := '0';
 	signal RXD              : std_logic_vector(7 downto 0) := (others => '0');
 	signal TXCLK            : std_logic                    := '0';
-	signal GPIO_BUTTONS     : std_logic_vector(0 downto 0) := (others => '0');
-	signal RS232_RX_onboard : std_logic                    := '0';
-	signal RS232_RX_ext     : std_logic                    := '0';
 
 	--BiDirs
 	signal MDIO : std_logic;
@@ -32,31 +29,15 @@ architecture behavioral of gigabee_tb is
 	signal TXER             : std_logic;
 	signal MDC              : std_logic;
 	signal GPIO_LEDS        : std_logic_vector(3 downto 0);
-	signal RS232_TX_onboard : std_logic;
-	signal RS232_TX_ext     : std_logic;
 
 	-- Clock period definitions
 	constant CLK_IN_period       : time := 8 ns;
 	constant mii_tx_clk_i_period : time := 40 ns;
 	constant mii_rx_clk_i_period : time := 40 ns;
-	constant mii_rx_setup        : time := 2 ns;
-	constant mii_rx_hold         : time := 0 ns;
 
 	constant SPEED_10100 : boolean := FALSE;
 
 	-- ARP Request
-	--	type memory_t is array (0 to 41) of std_logic_vector(7 downto 0);
-	--	constant test_packet : memory_t := (
-	--		x"FF", x"FF", x"FF", x"FF", x"FF", x"FF",
-	--		x"54", x"EE", x"75", x"34", x"2a", x"7e",
-	--		x"08", x"06",
-	--		x"00", x"01", x"08", x"00",
-	--		x"06", x"04", x"00", x"01",
-	--		x"54", x"EE", x"75", x"34", x"2a", x"7e",
-	--		x"c0", x"a8", x"02", x"05",
-	--		x"FF", x"FF", x"FF", x"FF", x"FF", x"FF",
-	--		x"c0", x"a8", x"02", x"02"
-	--	);
 
 	type t_memory is array (natural range <>) of std_logic_vector(7 downto 0);
 
@@ -165,18 +146,6 @@ BEGIN
 			wait for mii_rx_clk_i_period / 2;
 			RXCLK <= '1';
 			wait for mii_rx_clk_i_period / 2;
-		--			RXCLK <= '0';
-		--			wait for (mii_rx_clk_i_period / 2) - mii_rx_setup;
-		--			RXDV <= dv;
-		--			RXER <= er;
-		--			RXD  <= data;
-		--			wait for mii_rx_setup;
-		--			RXCLK <= '1';
-		--			wait for mii_rx_hold;
-		--			RXD  <= (others => '0');
-		--			RXDV <= '0';
-		--			RXER <= '0';
-		--			wait for (mii_rx_clk_i_period / 2) - mii_rx_hold;
 		end procedure;
 
 		procedure mii_put(
@@ -219,21 +188,7 @@ BEGIN
 			for b in 0 to 3 loop
 				mii_put(std_logic_vector(fcs_output_byte(fcs, b)));
 			end loop;
-			--mii_put(x"FD");
-			--mii_put(x"EE");
-			--mii_put(x"2B");
-			--mii_put(x"4D");
 
-			--			for j in 0 to 5 loop
-			--				mii_put(logic_vector_t(to_unsigned(j, 8)));
-			--			end loop;
-			--			mii_put(x"00");
-			--			mii_put(x"00");
-			--			mii_put(x"BA");
-			--			mii_put(x"5A");
-			--			mii_put(x"94");
-			--			mii_put(x"40");
-			--			for i in 0 to 1000 loop
 			while TRUE loop
 				mii_toggle;
 			end loop;

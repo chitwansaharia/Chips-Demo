@@ -61,7 +61,6 @@ begin
 
 			if reset_i = '1' then
 				tx_state <= TX_IDLE;
-			--leds_buf <= "0000";
 			else
 				case tx_state is
 					when TX_IDLE =>
