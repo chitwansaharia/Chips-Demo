@@ -85,12 +85,9 @@ use ethernet_mac.ethernet_types.all;
 
 entity GigaBee is
   port(
-   CLK_IN        : in    std_logic;       
-   RST           : in    std_logic;       
+   CLK_IN        : in    std_logic;             
 
-   --PHY INTERFACE
-   TX            : out   std_logic;       
-   RX            : in    std_logic;       
+   --PHY INTERFACE  
    PHY_RESET     : out   std_logic;       
    RXDV          : in    std_logic;       
    RXER          : in    std_logic;       
@@ -182,7 +179,6 @@ architecture RTL of GigaBee is
 
   --chips signals
   signal CLK : std_logic;
-  signal RST_INV : std_logic;
 
   --clock tree signals
   signal clkin1            : std_logic;
@@ -190,11 +186,8 @@ architecture RTL of GigaBee is
   signal clkfb             : std_logic;
   signal clk0              : std_logic;
   signal clkfx             : std_logic;
-  signal locked_internal   : std_logic;
-  signal status_internal   : std_logic_vector(7 downto 0);
   signal CLK_OUT1          : std_logic;
   signal CLK_OUT3          : std_logic;
-  signal NOT_LOCKED        : std_logic;
   signal INTERNAL_RST      : std_logic;
   signal LOCKED         : std_logic;
   
@@ -235,6 +228,9 @@ architecture RTL of GigaBee is
   signal OUTPUT_SOCKET          : std_logic_vector(15 downto 0);
   signal OUTPUT_SOCKET_STB      : std_logic;
   signal OUTPUT_SOCKET_ACK      : std_logic;
+  
+  -- Ethernet MAC
+  signal TXD_INTERNAL : std_ulogic_vector(7 downto 0);
   signal LINK_UP : std_ulogic;
   signal SPEED : t_ethernet_speed;
   signal RX_RESET : std_ulogic;
@@ -247,6 +243,8 @@ architecture RTL of GigaBee is
   signal TX_FULL : std_ulogic;
 
 begin
+	
+	TXD <= std_logic_vector(TXD_INTERNAL);
 
 	
 	ethernet_with_fifos_inst : entity ethernet_mac.ethernet_with_fifos
@@ -255,16 +253,16 @@ begin
 			MIIM_RESET_WAIT_TICKS => 1250000 -- 10 ms at 125 MHz clock, minimum: 5 ms
 		)
 		port map(
-			clock_125_i      => CLK_IN,
+			clock_125_i      => clkin1,
 			reset_i          => INTERNAL_RST,
 			mii_tx_clk_i     => TXCLK,
 			mii_tx_er_o      => TXER,
 			mii_tx_en_o      => TXEN,
-			mii_txd_o        => TXD,
+			mii_txd_o        => TXD_INTERNAL,
 			mii_rx_clk_i     => RXCLK,
 			mii_rx_er_i      => RXER,
 			mii_rx_dv_i      => RXDV,
-			mii_rxd_i        => RXD,
+			mii_rxd_i        => std_ulogic_vector(RXD),
 			gmii_gtx_clk_o   => GTXCLK,
 			rgmii_rx_ctl_i   => '0',
 			miim_clock_i     => CLK_OUT3,
@@ -459,7 +457,7 @@ reset_generator_inst : entity work.reset_generator
    -- Unused pin, tie low
     DSSEN                 => '0');
 
-  RST_INV <= not RST;
+  PHY_RESET <= not INTERNAL_RST;
 
   -- Output buffering
   -------------------------------------
