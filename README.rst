@@ -1,7 +1,7 @@
 ethernet_mac Demo with Chips-2.0 HTTP server on GigaBee
 =======================================================
 
-This project is intended to demonstrate the capabilities of the `ethernet_mac` tri-mode full-duplex Ethernet MAC. It is based on a demo for the `Chips-2.0 <http:pyandchips.org>`_  development environment by Jonathan P Dawson. The project targets the Xilinx Spartan 6 device, and more specifically, the Trenz Electronic GigaBee platform. The demo implements a TCP/IP socket interface, and a simple web application.
+This project is intended to demonstrate the capabilities of the ethernet_mac tri-mode full-duplex Ethernet MAC. It is based on a demo for the `Chips-2.0 <http://pyandchips.org>`_  development environment by Jonathan P Dawson. The project targets the Xilinx Spartan 6 device, and more specifically, the `Trenz Electronic GigaBee platform <http://www.trenz-electronic.de/products/fpga-boards/trenz-electronic/te0600.html>`. The demo implements a TCP/IP socket interface, and a simple web application.
 
 Dependencies
 ============
@@ -32,15 +32,17 @@ To compile the C code in chips, issue the following command in the project folde
 
     $ make
     
-Alternatively, you can copy the contents of the `precompiled` folder into the `source` folder.
+Alternatively, you can copy the contents of the ``precompiled`` folder into the ``source`` folder.
 
 Build in ISE 
 ============
 
-Open the project file Chips-Demo.xise in the ISE project navigator.
-Select the root node "xc6slx45-2fgg484" in the hierarchy view. Run the "Regenerate All Cores"
-process under "Design Utilities". Then, you can implement the top module "GigaBee" as usual.
-Download the .bit-file to the device using iMPACT.
++ Open the project file Chips-Demo.xise in the ISE project navigator
++ Select the root node "xc6slx45-2fgg484" in the hierarchy view
++ Run the "Regenerate All Cores" process under "Design Utilities"
++ Select the "GigaBee" top module in the hierarchy view
++ Run the "Generate Programming File" process"
++ Download the generated file GigaBee.bit to the device using iMPACT or any other means
 
 The default project settings are for an Spartan-6 XC6SLX45-2 FPGA. You need to modify
 them if you have a different device.
