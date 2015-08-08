@@ -48,11 +48,11 @@ void user_design()
 	unsigned page[] = 
 "<html>\
 <head>\
-<title>Chips-2.0 GigaBee Demo</title>\
+<title>ethernet_mac Chips-2.0 GigaBee Demo</title>\
 </head>\
 <body>\
-<h1>Chips-2.0 GigaBee Demo</h1>\
-<p>Welcome to the Chips-2.0 GigaBee Demo!</p>\
+<h1>ethernet_mac Chips-2.0 GigaBee Demo</h1>\
+<p>Welcome to the ethernet_mac Chips-2.0 GigaBee Demo!</p>\
 <p>Link speed: 1000 Mb/s</p>\
 <form>\
 	<input type=\"checkbox\" name=\"led1\" value=\"A\">led 0</input>\
