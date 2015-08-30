@@ -170,7 +170,7 @@ BEGIN
 
 	begin
 		wait until PHY_RESET = '1';
-		wait for CLK_IN_period * 10;
+		wait for CLK_IN_period * 1100;
 		while TRUE loop
 			for i in 0 to 10 loop
 				mii_toggle;
