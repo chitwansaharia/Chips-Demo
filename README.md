@@ -41,7 +41,7 @@ Build in ISE
 -   Select the root node “xc6slx45-2fgg484” in the hierarchy view
 -   Run the “Regenerate All Cores” process under “Design Utilities”
 -   Select the “GigaBee” top module in the hierarchy view
--   Run the “Generate Programming File” process"
+-   Run the “Generate Programming File” process
 -   Download the generated file GigaBee.bit to the device using iMPACT or any other means
 
 The default project settings are for an Spartan-6 XC6SLX45-2 FPGA. You need to modify them if you have a different device.
