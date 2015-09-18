@@ -107,9 +107,10 @@ void put_ethernet_packet(
 	packet[0] = destination_mac_address_hi;
 	packet[1] = destination_mac_address_med;
 	packet[2] = destination_mac_address_lo;
-	packet[3] = local_mac_address_hi;
-	packet[4] = local_mac_address_med;
-	packet[5] = local_mac_address_lo;
+	//let the MAC insert the source address
+	packet[3] = 0xFFFFu;
+	packet[4] = 0xFFFFu;
+	packet[5] = 0xFFFFu;
 	packet[6] = protocol;
 
 	put_eth(number_of_bytes);

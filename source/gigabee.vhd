@@ -54,6 +54,8 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
+use work.one_wire_types.all;
+
 library unisim;
 use unisim.vcomponents.all;
 
@@ -77,6 +79,9 @@ entity GigaBee is
 		TXER      : out   std_logic;
 		MDC       : out   std_logic;
 		MDIO      : inout std_logic;
+
+		--One-wire
+		ONE_WIRE  : inout std_logic;
 
 		--LEDS
 		GPIO_LEDS : out   std_logic_vector(3 downto 0);
@@ -213,8 +218,40 @@ architecture RTL of GigaBee is
 	signal TX_WR_EN     : std_ulogic;
 	signal TX_FULL      : std_ulogic;
 
+	-- One-wire signals
+	signal ow_req         : std_ulogic;
+	signal ow_ack         : std_ulogic;
+	signal ow_operation   : t_operation;
+	signal ow_data_read   : std_ulogic;
+	signal ow_data_write  : std_ulogic;
+	signal owb_req        : std_ulogic;
+	signal owb_ack        : std_ulogic;
+	signal owb_operation  : t_operation;
+	signal owb_data_read  : t_byte_data;
+	signal owb_data_write : t_byte_data;
+	signal owb_presence   : std_ulogic;
+	signal owb_last_bit   : t_bit_position;
+	signal one_wire_in    : std_ulogic;
+	signal one_wire_out   : std_ulogic;
+	signal one_wire_t     : std_ulogic;
+
+	signal mac_address       : t_mac_address;
+	signal mac_address_ready : std_ulogic;
+
 begin
 	TXD <= std_logic_vector(TXD_INTERNAL);
+
+	one_wire_IOBUF_inst : IOBUF
+		generic map(
+			DRIVE      => 12,
+			IOSTANDARD => "DEFAULT",
+			SLEW       => "SLOW")
+		port map(
+			O  => one_wire_in,          -- Buffer output
+			IO => ONE_WIRE,             -- Buffer inout port (connect directly to top-level port)
+			I  => one_wire_out,         -- Buffer input
+			T  => one_wire_t            -- 3-state enable input, high=input, low=output 
+		);
 
 	ethernet_with_fifos_inst : entity ethernet_mac.ethernet_with_fifos
 		generic map(
@@ -224,6 +261,7 @@ begin
 		port map(
 			clock_125_i    => clk0,
 			reset_i        => INTERNAL_RST,
+			mac_address_i  => mac_address,
 			mii_tx_clk_i   => TXCLK,
 			mii_tx_er_o    => TXER,
 			mii_tx_en_o    => TXEN,
@@ -255,6 +293,56 @@ begin
 , speed_override_i         => SPEED_1000MBPS
 		-- pragma translate_on
 
+		);
+
+	one_wire_master_inst : entity work.one_wire_master
+		generic map(
+			CLOCK_DIVIDE_FACTOR => 625
+		)
+		port map(
+			clock_i      => CLK_125,
+			reset_i      => INTERNAL_RST,
+			req_i        => ow_req,
+			ack_o        => ow_ack,
+			operation_i  => ow_operation,
+			data_read_o  => ow_data_read,
+			data_write_i => ow_data_write,
+			one_wire_i   => one_wire_in,
+			one_wire_o   => one_wire_out,
+			one_wire_t_o => one_wire_t
+		);
+
+	one_wire_byte_ops_inst : entity work.one_wire_byte_ops
+		port map(
+			clock_i         => CLK_125,
+			reset_i         => INTERNAL_RST,
+			req_i           => owb_req,
+			ack_o           => owb_ack,
+			operation_i     => owb_operation,
+			data_read_o     => owb_data_read,
+			data_write_i    => owb_data_write,
+			presence_o      => owb_presence,
+			last_bit_i      => owb_last_bit,
+			ow_req_o        => ow_req,
+			ow_ack_i        => ow_ack,
+			ow_operation_o  => ow_operation,
+			ow_data_read_i  => ow_data_read,
+			ow_data_write_o => ow_data_write
+		);
+
+	one_wire_ds2502_e48_inst : entity work.one_wire_ds2502_e48
+		port map(
+			clock_i             => CLK_125,
+			reset_i             => INTERNAL_RST,
+			mac_address_o       => mac_address,
+			mac_address_ready_o => mac_address_ready,
+			ow_req_o            => owb_req,
+			ow_ack_i            => owb_ack,
+			ow_operation_o      => owb_operation,
+			ow_data_read_i      => owb_data_read,
+			ow_data_write_o     => owb_data_write,
+			ow_presence_i       => owb_presence,
+			ow_last_bit_o       => owb_last_bit
 		);
 
 	SERVER_INST_1 : SERVER port map(

@@ -3,7 +3,7 @@ use ieee.std_logic_1164.all;
 
 library ethernet_mac;
 use ethernet_mac.framing_common.all;
-use ethernet_mac.crc32.all;
+use ethernet_mac.crc.all;
 
 entity gigabee_tb is
 end entity;
